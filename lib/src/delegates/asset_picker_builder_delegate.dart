@@ -1287,7 +1287,7 @@ class DefaultAssetPickerBuilderDelegate
       children: <Widget>[
         builder,
         selectedBackdrop(context, currentIndex, asset),
-        if (!isWeChatMoment || asset.type != AssetType.video)
+        if (isWeChatMoment || asset.type != AssetType.video)
           selectIndicator(context, index, asset),
         itemBannedIndicator(context, asset),
       ],
@@ -1991,9 +1991,14 @@ class DefaultAssetPickerBuilderDelegate
       builder: (_, DefaultAssetPickerProvider p, __) {
         final bool isDisabled =
             (!p.selectedAssets.contains(asset) && p.selectedMaximumAssets) ||
-                (isWeChatMoment &&
+                (!p.selectedAssets.contains(asset) &&
+                    isWeChatMoment &&
                     asset.type == AssetType.video &&
-                    p.selectedAssets.isNotEmpty);
+                    p.selectedAssets.isNotEmpty) ||
+                (!p.selectedAssets.contains(asset) &&
+                    isWeChatMoment &&
+                    p.selectedAssets.isNotEmpty &&
+                    p.selectedAssets.first.type == AssetType.video);
         if (isDisabled) {
           return Container(
             color: theme.colorScheme.background.withOpacity(.85),

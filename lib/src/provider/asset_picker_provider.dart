@@ -28,11 +28,11 @@ abstract class AssetPickerProvider<Asset, Path> extends ChangeNotifier {
     this.pathThumbnailSize = defaultPathThumbnailSize,
     List<Asset>? selectedAssets,
   })  : assert(maxAssets > 0, 'maxAssets must be greater than 0.'),
-        assert(pageSize > 0, 'pageSize must be greater than 0.') {
-    if (selectedAssets != null && selectedAssets.isNotEmpty) {
-      _selectedAssets = selectedAssets.toList();
-    }
-  }
+        assert(pageSize > 0, 'pageSize must be greater than 0.'),
+        _previousSelectedAssets =
+            selectedAssets?.toList(growable: false) ?? List<Asset>.empty(),
+        _selectedAssets =
+            selectedAssets?.toList() ?? List<Asset>.empty(growable: true);
 
   /// Maximum count for asset selection.
   /// 资源选择的最大数量
@@ -177,10 +177,15 @@ abstract class AssetPickerProvider<Asset, Path> extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Selected assets before the picker starts picking.
+  /// 选择器开始选择前已选中的资源
+  List<Asset> get previousSelectedAssets => _previousSelectedAssets;
+  final List<Asset> _previousSelectedAssets;
+
   /// Selected assets.
   /// 已选中的资源
   List<Asset> get selectedAssets => _selectedAssets;
-  List<Asset> _selectedAssets = <Asset>[];
+  late List<Asset> _selectedAssets;
 
   set selectedAssets(List<Asset> value) {
     if (value == _selectedAssets) {
@@ -303,10 +308,9 @@ class DefaultAssetPickerProvider
     final PMFilter? fog = filterOptions;
     if (fog is FilterOptionGroup?) {
       // Initial base options.
-      // Enable need title for audios and image to get proper display.
+      // Enable need title for audios to get proper display.
       final FilterOptionGroup newOptions = FilterOptionGroup(
         imageOption: const FilterOption(
-          needTitle: true,
           sizeConstraint: SizeConstraint(ignoreSize: true),
         ),
         audioOption: const FilterOption(
@@ -414,36 +418,48 @@ class DefaultAssetPickerProvider
   Future<Uint8List?> getThumbnailFromPath(
     PathWrapper<AssetPathEntity> path,
   ) async {
-    if (requestType == RequestType.audio) {
+    try {
+      if (requestType == RequestType.audio) {
+        return null;
+      }
+      final int assetCount = path.assetCount ?? await path.path.assetCountAsync;
+      if (assetCount == 0) {
+        return null;
+      }
+      final List<AssetEntity> assets = await path.path.getAssetListRange(
+        start: 0,
+        end: 1,
+      );
+      if (assets.isEmpty) {
+        return null;
+      }
+      final AssetEntity asset = assets.single;
+      // Obtain the thumbnail only when the asset is image or video.
+      if (asset.type != AssetType.image && asset.type != AssetType.video) {
+        return null;
+      }
+      final Uint8List? data = await asset.thumbnailDataWithSize(
+        pathThumbnailSize,
+      );
+      final int index = _paths.indexWhere(
+        (PathWrapper<AssetPathEntity> p) => p.path == path.path,
+      );
+      if (index != -1) {
+        _paths[index] = _paths[index].copyWith(thumbnailData: data);
+        notifyListeners();
+      }
+      return data;
+    } catch (e, s) {
+      FlutterError.presentError(
+        FlutterErrorDetails(
+          exception: e,
+          stack: s,
+          library: packageName,
+          silent: true,
+        ),
+      );
       return null;
     }
-    final int assetCount = path.assetCount ?? await path.path.assetCountAsync;
-    if (assetCount == 0) {
-      return null;
-    }
-    final List<AssetEntity> assets = await path.path.getAssetListRange(
-      start: 0,
-      end: 1,
-    );
-    if (assets.isEmpty) {
-      return null;
-    }
-    final AssetEntity asset = assets.single;
-    // Obtain the thumbnail only when the asset is image or video.
-    if (asset.type != AssetType.image && asset.type != AssetType.video) {
-      return null;
-    }
-    final Uint8List? data = await asset.thumbnailDataWithSize(
-      pathThumbnailSize,
-    );
-    final int index = _paths.indexWhere(
-      (PathWrapper<AssetPathEntity> p) => p.path == path.path,
-    );
-    if (index != -1) {
-      _paths[index] = _paths[index].copyWith(thumbnailData: data);
-      notifyListeners();
-    }
-    return data;
   }
 
   Future<void> getAssetCountFromPath(PathWrapper<AssetPathEntity> path) async {

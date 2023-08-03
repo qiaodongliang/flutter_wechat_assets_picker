@@ -3,6 +3,7 @@
 // in the LICENSE file.
 
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:photo_manager/photo_manager.dart';
@@ -14,6 +15,7 @@ import '../delegates/asset_picker_viewer_builder_delegate.dart';
 import '../provider/asset_picker_provider.dart';
 import '../provider/asset_picker_viewer_provider.dart';
 import 'asset_picker.dart';
+import 'asset_picker_clip_view.dart';
 
 class AssetPickerViewer<Asset, Path> extends StatefulWidget {
   const AssetPickerViewer({
@@ -26,6 +28,32 @@ class AssetPickerViewer<Asset, Path> extends StatefulWidget {
   @override
   AssetPickerViewerState<Asset, Path> createState() =>
       AssetPickerViewerState<Asset, Path>();
+
+  /// Static method to push with the navigator.
+  /// 跳转至裁剪页面的静态方法
+  static Future<void> pushToClipPage(
+    BuildContext context, {
+    required AssetEntity assetEntity,
+    DefaultAssetPickerProvider? selectorProvider,
+  }) async {
+    final Widget clipView = DLAssetPickerClipView(
+      assetEntity: assetEntity,
+    );
+    final MaterialPageRoute<Map<String, dynamic>> pageRoute =
+        MaterialPageRoute<Map<String, dynamic>>(
+      builder: (BuildContext context) => clipView,
+      fullscreenDialog: true,
+    );
+    Navigator.of(context).push(pageRoute).then((Map<String, dynamic>? value) {
+      if (value is Map<String, dynamic>) {
+        final bool back = value['back'] as bool;
+        if (back) {
+          final Uint8List image = value['image'] as Uint8List;
+          Navigator.of(context).maybePop(image);
+        }
+      }
+    });
+  }
 
   /// Static method to push with the navigator.
   /// 跳转至选择预览的静态方法

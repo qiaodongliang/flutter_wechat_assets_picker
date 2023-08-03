@@ -148,10 +148,9 @@ abstract class AssetPickerBuilderDelegate<Asset, Path> {
 
   /// Whether the current platform is Apple OS.
   /// 当前平台是否苹果系列系统 (iOS & MacOS)
-  bool isAppleOS(BuildContext context) => switch (Theme.of(context).platform) {
-        TargetPlatform.iOS || TargetPlatform.macOS => true,
-        _ => false,
-      };
+  bool isAppleOS(BuildContext context) =>
+      Theme.of(context).platform == TargetPlatform.iOS ||
+      Theme.of(context).platform == TargetPlatform.macOS;
 
   /// Whether the picker is under the single asset mode.
   /// 选择器是否为单选模式

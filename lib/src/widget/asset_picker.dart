@@ -36,7 +36,7 @@ class AssetPicker<Asset, Path> extends StatefulWidget {
   }
 
   /// {@macro wechat_assets_picker.delegates.AssetPickerDelegate.pickAssets}
-  static Future<List<AssetEntity>?> pickAssets(
+  static Future<dynamic> pickAssets(
     BuildContext context, {
     Key? key,
     AssetPickerConfig pickerConfig = const AssetPickerConfig(),

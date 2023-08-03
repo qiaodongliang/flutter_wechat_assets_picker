@@ -8,7 +8,6 @@ import 'package:photo_manager/photo_manager.dart';
 
 import '../constants/config.dart';
 import '../constants/constants.dart';
-import '../internal/methods.dart';
 import '../provider/asset_picker_provider.dart';
 import '../widget/asset_picker.dart';
 import '../widget/asset_picker_page_route.dart';
@@ -58,7 +57,7 @@ class AssetPickerDelegate {
   ///  * [DefaultAssetPickerBuilderDelegate] which is the default builder that
   ///    builds all widgets during the picking process.
   /// {@endtemplate}
-  Future<List<AssetEntity>?> pickAssets(
+  Future<dynamic> pickAssets(
     BuildContext context, {
     Key? key,
     AssetPickerConfig pickerConfig = const AssetPickerConfig(),
@@ -102,14 +101,15 @@ class AssetPickerDelegate {
         textDelegate: pickerConfig.textDelegate,
         themeColor: pickerConfig.themeColor,
         locale: Localizations.maybeLocaleOf(context),
+        enterClip: pickerConfig.enterClip,
       ),
     );
-    final List<AssetEntity>? result = await Navigator.of(
+    final result = await Navigator.of(
       context,
       rootNavigator: useRootNavigator,
-    ).push<List<AssetEntity>>(
+    ).push<dynamic>(
       pageRouteBuilder?.call(picker) ??
-          AssetPickerPageRoute<List<AssetEntity>>(builder: (_) => picker),
+          AssetPickerPageRoute<dynamic>(builder: (_) => picker),
     );
     return result;
   }
@@ -165,8 +165,15 @@ class AssetPickerDelegate {
     try {
       PhotoManager.addChangeCallback(callback);
       PhotoManager.startChangeNotify();
-    } catch (e) {
-      realDebugPrint('Error when registering assets callback: $e');
+    } catch (e, s) {
+      FlutterError.presentError(
+        FlutterErrorDetails(
+          exception: e,
+          stack: s,
+          library: packageName,
+          silent: true,
+        ),
+      );
     }
   }
 
@@ -181,8 +188,15 @@ class AssetPickerDelegate {
     try {
       PhotoManager.removeChangeCallback(callback);
       PhotoManager.stopChangeNotify();
-    } catch (e) {
-      realDebugPrint('Error when unregistering assets callback: $e');
+    } catch (e, s) {
+      FlutterError.presentError(
+        FlutterErrorDetails(
+          exception: e,
+          stack: s,
+          library: packageName,
+          silent: true,
+        ),
+      );
     }
   }
 

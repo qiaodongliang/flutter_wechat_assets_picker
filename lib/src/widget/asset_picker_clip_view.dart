@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'dart:typed_data';
-import 'dart:ui';
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:image_editor/image_editor.dart';
@@ -22,6 +21,7 @@ class _DLAssetPickerClipViewState extends State<DLAssetPickerClipView> {
   final GlobalKey<ExtendedImageEditorState> _editorKey =
       GlobalKey<ExtendedImageEditorState>();
   File? _originAssetFile;
+  bool _imageClipLoading = false;
 
   @override
   void initState() {
@@ -64,9 +64,10 @@ class _DLAssetPickerClipViewState extends State<DLAssetPickerClipView> {
                 initEditorConfigHandler: (ExtendedImageState? state) {
                   return EditorConfig(
                     maxScale: 10,
-                    cornerColor: Colors.transparent,
+                    cornerColor: Colors.white,
                     cornerSize: Size.zero,
-                    lineColor: Colors.transparent,
+                    lineColor: Colors.white,
+                    lineHeight: 1,
                     cropLayerPainter: const DLEditorCropLayerPainter(),
                     cropRectPadding:
                         EdgeInsets.symmetric(horizontal: _setWidth(16)),
@@ -98,7 +99,9 @@ class _DLAssetPickerClipViewState extends State<DLAssetPickerClipView> {
           GestureDetector(
             onTap: () {
               /// 裁剪图片
-              _handleClipImageLogic();
+              if (!_imageClipLoading) {
+                _handleClipImageLogic();
+              }
             },
             child: Container(
               alignment: Alignment.center,
@@ -156,6 +159,9 @@ class _DLAssetPickerClipViewState extends State<DLAssetPickerClipView> {
   }
 
   Future<void> _handleClipImageLogic() async {
+    setState(() {
+      _imageClipLoading = true;
+    });
     try {
       if (_editorKey.currentState != null) {
         final ExtendedImageEditorState state = _editorKey.currentState!;
@@ -191,6 +197,9 @@ class _DLAssetPickerClipViewState extends State<DLAssetPickerClipView> {
           image: img,
           imageEditorOption: option,
         );
+        setState(() {
+          _imageClipLoading = false;
+        });
         if (result != null) {
           Navigator.of(context).maybePop({
             'back': true,
@@ -230,7 +239,10 @@ class DLEditorCropLayerPainter extends EditorCropLayerPainter {
 
     final Paint paint = Paint()
       ..color = painter.cornerColor
-      ..style = PaintingStyle.stroke;
+      ..style = PaintingStyle.stroke
+      ..isAntiAlias = true
+      ..filterQuality = FilterQuality.high
+      ..strokeWidth = painter.lineHeight;
     canvas.drawCircle(
       center,
       radius,

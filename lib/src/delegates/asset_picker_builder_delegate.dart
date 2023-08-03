@@ -782,7 +782,6 @@ class DefaultAssetPickerBuilderDelegate
     int index,
     bool selected,
   ) async {
-    print('@@@@@@@@@@@@@');
     final bool? selectPredicateResult = await selectPredicate?.call(
       context,
       asset,
@@ -1277,13 +1276,14 @@ class DefaultAssetPickerBuilderDelegate
     }
 
     final AssetEntity asset = currentAssets.elementAt(currentIndex);
-    final Widget builder = switch (asset.type) {
-      AssetType.image ||
-      AssetType.video =>
-        imageAndVideoItemBuilder(context, currentIndex, asset),
-      AssetType.audio => audioItemBuilder(context, currentIndex, asset),
-      AssetType.other => const SizedBox.shrink(),
-    };
+    Widget builder = Container();
+    if (asset.type == AssetType.image || asset.type == AssetType.video) {
+      builder = imageAndVideoItemBuilder(context, index, asset);
+    } else if (asset.type == AssetType.audio) {
+      builder = audioItemBuilder(context, index, asset);
+    } else if (asset.type == AssetType.other) {
+      builder = const SizedBox.shrink();
+    }
     final Widget content = Stack(
       key: ValueKey<String>(asset.id),
       children: <Widget>[
@@ -1417,10 +1417,11 @@ class DefaultAssetPickerBuilderDelegate
     if (currentPathEntity?.isAll != true && specialItem == null) {
       return length;
     }
-    return switch (specialItemPosition) {
-      SpecialItemPosition.none => length,
-      SpecialItemPosition.prepend || SpecialItemPosition.append => length + 1,
-    };
+
+    if (specialItemPosition == SpecialItemPosition.prepend || specialItemPosition == SpecialItemPosition.append) {
+      return length + 1;
+    }
+    return length;
   }
 
   @override

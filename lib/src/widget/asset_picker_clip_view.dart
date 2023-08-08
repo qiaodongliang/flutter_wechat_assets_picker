@@ -32,14 +32,12 @@ class _DLAssetPickerClipViewState extends State<DLAssetPickerClipView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        color: Colors.transparent,
-        child: Stack(
-          children: <Widget>[
-            _renderClipWidget(),
-            _renderBtnWidget(),
-          ],
-        ),
+      body: Stack(
+        children: <Widget>[
+          _renderClipWidget(),
+          _renderClipMask(),
+          _renderBtnWidget(),
+        ],
       ),
     );
   }
@@ -84,6 +82,22 @@ class _DLAssetPickerClipViewState extends State<DLAssetPickerClipView> {
                 },
               )
             : Container(),
+      ),
+    );
+  }
+
+  /// 遮罩
+  Widget _renderClipMask() {
+    return Positioned(
+      left: 0,
+      right: 0,
+      top: 0,
+      bottom: 0,
+      child: IgnorePointer(
+        child: Image.asset(
+          'assets/icon_clip_mask.png',
+          fit: BoxFit.cover,
+        ),
       ),
     );
   }
@@ -243,11 +257,11 @@ class DLEditorCropLayerPainter extends EditorCropLayerPainter {
       ..isAntiAlias = true
       ..filterQuality = FilterQuality.high
       ..strokeWidth = painter.lineHeight;
-    canvas.drawCircle(
-      center,
-      radius,
-      paint,
-    );
+    // canvas.drawCircle(
+    //   center,
+    //   radius,
+    //   paint,
+    // );
     // super.paintCorners(canvas, size, painter);
   }
 
@@ -284,7 +298,7 @@ class DLEditorCropLayerPainter extends EditorCropLayerPainter {
         Rect.fromLTWH(rect.left, rect.top, size.width, size.height),
       );
 
-    canvas.drawPath(path, paint);
+    // canvas.drawPath(path, paint);
     // super.paintMask(canvas, size, painter);
   }
 

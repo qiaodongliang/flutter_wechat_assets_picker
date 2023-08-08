@@ -95,7 +95,7 @@ class _DLAssetPickerClipViewState extends State<DLAssetPickerClipView> {
       bottom: 0,
       child: IgnorePointer(
         child: Image.asset(
-          'assets/icon_clip_mask.png',
+          'assets/images/icon_clip_mask.png',
           fit: BoxFit.cover,
         ),
       ),

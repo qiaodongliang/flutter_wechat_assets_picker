@@ -164,11 +164,11 @@ abstract class AssetPickerBuilderDelegate<Asset, Path> {
 
   /// Space between assets item widget.
   /// 资源部件之间的间隔
-  double get itemSpacing => 2;
+  double get itemSpacing => 1;
 
   /// Item's height in app bar.
   /// 顶栏内各个组件的统一高度
-  double get appBarItemHeight => 32;
+  double get appBarItemHeight => 36;
 
   /// Blur radius in Apple OS layout mode.
   /// 苹果系列系统布局方式下的模糊度
@@ -2016,7 +2016,7 @@ class DefaultAssetPickerBuilderDelegate
 
   @override
   Widget selectIndicator(BuildContext context, int index, AssetEntity asset) {
-    final double indicatorSize = context.mediaQuery.size.width / gridCount / 3;
+    final double indicatorSize = context.mediaQuery.size.width / gridCount / 3.5;
     final Duration duration = switchingPathDuration * 0.75;
     return Selector<DefaultAssetPickerProvider, String>(
       selector: (_, DefaultAssetPickerProvider p) => p.selectedDescriptions,
@@ -2073,7 +2073,7 @@ class DefaultAssetPickerBuilderDelegate
 
   @override
   Widget selectedBackdrop(BuildContext context, int index, AssetEntity asset) {
-    final double indicatorSize = context.mediaQuery.size.width / gridCount / 3;
+    final double indicatorSize = context.mediaQuery.size.width / gridCount / 3.5;
     return Positioned.fill(
       child: GestureDetector(
         onTap: isPreviewEnabled ? () => viewAsset(context, index, asset) : null,
@@ -2085,7 +2085,7 @@ class DefaultAssetPickerBuilderDelegate
               duration: switchingPathDuration,
               padding: EdgeInsets.all(indicatorSize * .35),
               color: selected
-                  ? theme.colorScheme.primary.withOpacity(.45)
+                  ? theme.colorScheme.primary.withOpacity(.1)
                   : theme.colorScheme.background.withOpacity(.1),
               child: selected && !isSingleAssetMode
                   ? Align(

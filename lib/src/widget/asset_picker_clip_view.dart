@@ -35,7 +35,6 @@ class _DLAssetPickerClipViewState extends State<DLAssetPickerClipView> {
       body: Stack(
         children: <Widget>[
           _renderClipWidget(),
-          _renderClipMask(),
           _renderBtnWidget(),
         ],
       ),
@@ -82,22 +81,6 @@ class _DLAssetPickerClipViewState extends State<DLAssetPickerClipView> {
                 },
               )
             : Container(),
-      ),
-    );
-  }
-
-  /// 遮罩
-  Widget _renderClipMask() {
-    return Positioned(
-      left: 0,
-      right: 0,
-      top: 0,
-      bottom: 0,
-      child: IgnorePointer(
-        child: Image.asset(
-          'assets/images/icon_clip_mask.png',
-          fit: BoxFit.cover,
-        ),
       ),
     );
   }
@@ -257,11 +240,7 @@ class DLEditorCropLayerPainter extends EditorCropLayerPainter {
       ..isAntiAlias = true
       ..filterQuality = FilterQuality.high
       ..strokeWidth = painter.lineHeight;
-    // canvas.drawCircle(
-    //   center,
-    //   radius,
-    //   paint,
-    // );
+    canvas.drawCircle(center, radius, paint);
     // super.paintCorners(canvas, size, painter);
   }
 
@@ -278,9 +257,7 @@ class DLEditorCropLayerPainter extends EditorCropLayerPainter {
     final Paint paint = Paint()
       ..color = maskColor
       ..style = PaintingStyle.fill
-      ..filterQuality = FilterQuality.high
-      ..maskFilter = const MaskFilter.blur(BlurStyle.inner, 0);
-    //   ..imageFilter = ImageFilter.blur(sigmaX: 10, sigmaY: 10);
+      ..filterQuality = FilterQuality.high;
 
     final Offset center = Offset(
       cropRect.left + cropRect.width / 2,
@@ -298,7 +275,7 @@ class DLEditorCropLayerPainter extends EditorCropLayerPainter {
         Rect.fromLTWH(rect.left, rect.top, size.width, size.height),
       );
 
-    // canvas.drawPath(path, paint);
+    canvas.drawPath(path, paint);
     // super.paintMask(canvas, size, painter);
   }
 

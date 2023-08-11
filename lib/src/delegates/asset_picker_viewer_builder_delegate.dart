@@ -3,7 +3,6 @@
 // in the LICENSE file.
 
 import 'dart:async';
-import 'dart:io';
 import 'dart:math' as math;
 
 import 'package:extended_image/extended_image.dart';
@@ -147,7 +146,10 @@ abstract class AssetPickerViewerBuilderDelegate<Asset, Path> {
 
   /// Whether the current platform is Apple OS.
   /// 当前平台是否为苹果系列系统
-  bool get isAppleOS => Platform.isIOS || Platform.isMacOS;
+  bool isAppleOS(BuildContext context) => switch (Theme.of(context).platform) {
+        TargetPlatform.iOS || TargetPlatform.macOS => true,
+        _ => false,
+      };
 
   AssetPickerTextDelegate get textDelegate => Singleton.textDelegate;
 
@@ -324,17 +326,13 @@ abstract class AssetPickerViewerBuilderDelegate<Asset, Path> {
     ExtendedImageState state, {
     bool hasLoaded = false,
   }) {
-    switch (state.extendedImageLoadState) {
-      case LoadState.completed:
-        if (hasLoaded) {
-          return state.completedWidget;
-        }
-        return FadeImageBuilder(child: state.completedWidget);
-      case LoadState.failed:
-        return failedItemBuilder(context);
-      case LoadState.loading:
-        return const SizedBox.shrink();
-    }
+    return switch (state.extendedImageLoadState) {
+      LoadState.completed => hasLoaded
+          ? state.completedWidget
+          : FadeImageBuilder(child: state.completedWidget),
+      LoadState.failed => failedItemBuilder(context),
+      LoadState.loading => const SizedBox.shrink(),
+    };
   }
 
   /// The item widget when [AssetEntity.thumbnailData] load failed.
@@ -413,34 +411,25 @@ class DefaultAssetPickerViewerBuilderDelegate
   @override
   Widget assetPageBuilder(BuildContext context, int index) {
     final AssetEntity asset = previewAssets.elementAt(index);
-    final Widget builder;
-    switch (asset.type) {
-      case AssetType.audio:
-        builder = AudioPageBuilder(asset: asset);
-        break;
-      case AssetType.image:
-        builder = ImagePageBuilder(
+    final Widget builder = switch (asset.type) {
+      AssetType.audio => AudioPageBuilder(asset: asset),
+      AssetType.image => ImagePageBuilder(
           asset: asset,
           delegate: this,
           previewThumbnailSize: previewThumbnailSize,
-        );
-        break;
-      case AssetType.video:
-        builder = VideoPageBuilder(
+        ),
+      AssetType.video => VideoPageBuilder(
           asset: asset,
           delegate: this,
           hasOnlyOneVideoAndMoment: isWeChatMoment && hasVideo,
-        );
-        break;
-      case AssetType.other:
-        builder = Center(
+        ),
+      AssetType.other => Center(
           child: ScaleText(
             textDelegate.unSupportedAssetType,
             semanticsLabel: semanticsTextDelegate.unSupportedAssetType,
           ),
-        );
-        break;
-    }
+        ),
+    };
     return MergeSemantics(
       child: Consumer<AssetPickerViewerProvider<AssetEntity>?>(
         builder: (
@@ -547,9 +536,9 @@ class DefaultAssetPickerViewerBuilderDelegate
 
   @override
   Widget bottomDetailBuilder(BuildContext context) {
-    final Color backgroundColor = themeData.primaryColor.withOpacity(.9);
+    final Color backgroundColor = themeData.primaryColor;
     return ValueListenableBuilder2<bool, int>(
-      firstNotifier: isDisplayingDetail,
+      firstNotifier: isDisplayingDetail, // ValueNotifier<bool>(false),
       secondNotifier: selectedNotifier,
       builder: (_, bool v, __, Widget? child) => AnimatedPositionedDirectional(
         duration: kThemeAnimationDuration,
@@ -592,13 +581,10 @@ class DefaultAssetPickerViewerBuilderDelegate
                 color: backgroundColor,
               ),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: MainAxisAlignment.end,
                 children: <Widget>[
-                  const Spacer(),
-                  if (isAppleOS && (provider != null || isWeChatMoment))
-                    confirmButton(context)
-                  else
-                    selectButton(context),
+                  if (provider != null || isWeChatMoment)
+                    confirmButton(context),
                 ],
               ),
             ),
@@ -646,18 +632,12 @@ class DefaultAssetPickerViewerBuilderDelegate
           builder: (_, AsyncSnapshot<int> snapshot) {
             final AssetEntity asset = selectedAssets!.elementAt(index);
             final bool isViewing = previewAssets[snapshot.data!] == asset;
-            final Widget item = () {
-              switch (asset.type) {
-                case AssetType.image:
-                  return _imagePreviewItem(asset);
-                case AssetType.video:
-                  return _videoPreviewItem(asset);
-                case AssetType.audio:
-                  return _audioPreviewItem(asset);
-                case AssetType.other:
-                  return const SizedBox.shrink();
-              }
-            }();
+            final Widget item = switch (asset.type) {
+              AssetType.image => _imagePreviewItem(asset),
+              AssetType.video => _videoPreviewItem(asset),
+              AssetType.audio => _audioPreviewItem(asset),
+              AssetType.other => const SizedBox.shrink(),
+            };
             return Semantics(
               label: '${semanticsTextDelegate.semanticTypeLabel(asset.type)}'
                   '${index + 1}',
@@ -714,7 +694,7 @@ class DefaultAssetPickerViewerBuilderDelegate
   /// 顶栏部件
   Widget appBar(BuildContext context) {
     return ValueListenableBuilder<bool>(
-      valueListenable: isDisplayingDetail,
+      valueListenable: ValueNotifier<bool>(true),//isDisplayingDetail,
       builder: (_, bool value, Widget? child) => AnimatedPositionedDirectional(
         duration: kThemeAnimationDuration,
         curve: Curves.easeInOut,
@@ -735,7 +715,7 @@ class DefaultAssetPickerViewerBuilderDelegate
                 child: Semantics(
                   sortKey: ordinalSortKey(0),
                   child: IconButton(
-                    icon: const Icon(Icons.close),
+                    icon: const Icon(Icons.arrow_back_ios_new),
                     tooltip: MaterialLocalizations.of(
                       context,
                     ).backButtonTooltip,
@@ -744,7 +724,7 @@ class DefaultAssetPickerViewerBuilderDelegate
                 ),
               ),
             ),
-            if (!isAppleOS && specialPickerType == null)
+            if (!isAppleOS(context) && specialPickerType == null)
               Expanded(
                 child: Center(
                   child: Semantics(
@@ -763,32 +743,18 @@ class DefaultAssetPickerViewerBuilderDelegate
                   ),
                 ),
               ),
-            if (isAppleOS && provider != null)
+            if (provider != null)
               Expanded(
-                child: Align(
+                child: Container(
                   alignment: AlignmentDirectional.centerEnd,
+                  padding: const EdgeInsetsDirectional.only(end: 14),
                   child: Semantics(
                     sortKey: ordinalSortKey(0.2),
                     child: selectButton(context),
                   ),
                 ),
               )
-            else if (isAppleOS)
-              const Spacer(),
-            if (!isAppleOS && (provider != null || isWeChatMoment))
-              Expanded(
-                child: Align(
-                  alignment: AlignmentDirectional.centerEnd,
-                  child: Semantics(
-                    sortKey: ordinalSortKey(0.3),
-                    child: Padding(
-                      padding: const EdgeInsetsDirectional.only(end: 14),
-                      child: confirmButton(context),
-                    ),
-                  ),
-                ),
-              )
-            else if (!isAppleOS)
+            else
               const Spacer(),
           ],
         ),
@@ -833,9 +799,9 @@ class DefaultAssetPickerViewerBuilderDelegate
             }
             if (provider!.isSelectedNotEmpty) {
               return '${textDelegate.confirm}'
-                  ' (${provider.currentlySelectedAssets.length}'
-                  '/'
-                  '${selectorProvider!.maxAssets})';
+                  '(${provider.currentlySelectedAssets.length})';
+                  // '/'
+                  // '${selectorProvider!.maxAssets})';
             }
             return textDelegate.confirm;
           }
@@ -845,6 +811,7 @@ class DefaultAssetPickerViewerBuilderDelegate
               previewAssets.isEmpty ||
               selectedNotifier.value == 0;
           return MaterialButton(
+            elevation: 0,
             minWidth:
                 (isWeChatMoment && hasVideo) || provider!.isSelectedNotEmpty
                     ? 48
@@ -854,15 +821,15 @@ class DefaultAssetPickerViewerBuilderDelegate
             color: themeData.colorScheme.secondary,
             disabledColor: themeData.dividerColor,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(3),
+              borderRadius: BorderRadius.circular(8),
             ),
             onPressed: isButtonEnabled ? onPressed : null,
             materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
             child: ScaleText(
               buildText(),
               style: TextStyle(
-                color: themeData.textTheme.bodyLarge?.color,
-                fontSize: 17,
+                color: themeData.canvasColor,
+                fontSize: 14,
                 fontWeight: FontWeight.normal,
               ),
               overflow: TextOverflow.fade,
@@ -873,9 +840,9 @@ class DefaultAssetPickerViewerBuilderDelegate
                 }
                 if (provider!.isSelectedNotEmpty) {
                   return '${semanticsTextDelegate.confirm}'
-                      ' (${provider.currentlySelectedAssets.length}'
-                      '/'
-                      '${selectorProvider!.maxAssets})';
+                      '(${provider.currentlySelectedAssets.length})';
+                      // '/'
+                      // '${selectorProvider!.maxAssets})';
                 }
                 return semanticsTextDelegate.confirm;
               }(),
@@ -896,26 +863,24 @@ class DefaultAssetPickerViewerBuilderDelegate
     if (!isSelected && selectedMaximumAssets) {
       return const SizedBox.shrink();
     }
-    return Padding(
-      padding: const EdgeInsetsDirectional.only(end: 10.0),
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: () {
-          Feedback.forTap(context);
-          onChangingSelected(context, asset, isSelected);
-        },
-        child: AnimatedContainer(
-          duration: kThemeAnimationDuration,
-          width: 28.0,
-          decoration: BoxDecoration(
-            border: !isSelected
-                ? Border.all(color: themeData.iconTheme.color!)
-                : null,
-            color: isSelected ? themeData.colorScheme.secondary : null,
-            shape: BoxShape.circle,
-          ),
-          child: const Center(child: Icon(Icons.check, size: 20.0)),
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () {
+        Feedback.forTap(context);
+        onChangingSelected(context, asset, isSelected);
+      },
+      child: AnimatedContainer(
+        duration: kThemeAnimationDuration,
+        width: 24.0,
+        height: 24.0,
+        decoration: BoxDecoration(
+          border: !isSelected
+              ? Border.all(color: themeData.dividerColor)
+              : null,
+          color: isSelected ? themeData.colorScheme.secondary : null,
+          shape: BoxShape.circle,
         ),
+        child: isSelected ? Center(child: Icon(Icons.check, size: 20.0, color: themeData.canvasColor,)) : const SizedBox.shrink(),
       ),
     );
   }
@@ -961,14 +926,14 @@ class DefaultAssetPickerViewerBuilderDelegate
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: <Widget>[
-                    if (isAppleOS)
+                    if (isAppleOS(context))
                       _appleOSSelectButton(c, isSelected, asset)
                     else
                       _androidSelectButton(c, isSelected, asset),
-                    if (!isAppleOS)
+                    if (!isAppleOS(context))
                       ScaleText(
                         textDelegate.select,
-                        style: const TextStyle(fontSize: 17, height: 1),
+                        style: const TextStyle(fontSize: 17, height: 1.2),
                         semanticsLabel: semanticsTextDelegate.select,
                       ),
                   ],
@@ -1024,7 +989,7 @@ class DefaultAssetPickerViewerBuilderDelegate
               ] else ...<Widget>[
                 appBar(context),
                 if (selectedAssets != null ||
-                    (isWeChatMoment && hasVideo && isAppleOS))
+                    (isWeChatMoment && hasVideo && isAppleOS(context)))
                   bottomDetailBuilder(context),
               ],
             ],

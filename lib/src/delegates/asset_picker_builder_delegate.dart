@@ -2024,7 +2024,7 @@ class DefaultAssetPickerBuilderDelegate
 
   @override
   Widget selectIndicator(BuildContext context, int index, AssetEntity asset) {
-    const double indicatorSize = 24;
+    final double indicatorSize = (24 / 375) * MediaQuery.of(context).size.width;
         //context.mediaQuery.size.width / gridCount / 3.5;
     final Duration duration = switchingPathDuration * 0.75;
     return Selector<DefaultAssetPickerProvider, String>(
@@ -2035,7 +2035,7 @@ class DefaultAssetPickerBuilderDelegate
           duration: duration,
           width: indicatorSize / (isAppleOS(context) ? 1.25 : 1.5),
           height: indicatorSize / (isAppleOS(context) ? 1.25 : 1.5),
-          padding: const EdgeInsets.all(indicatorSize / 10),
+          padding: EdgeInsets.all(indicatorSize / 10),
           decoration: BoxDecoration(
             border: !selected
                 ? Border.all(
@@ -2092,7 +2092,7 @@ class DefaultAssetPickerBuilderDelegate
     return Positioned.fill(
       child: GestureDetector(
         // onTap: isPreviewEnabled ? () => viewAsset(context, index, asset) : null,
-        onTap: () => viewAsset(context, index, asset),
+        onTap: isSingleAssetMode && enterClip == true ? null : () => viewAsset(context, index, asset),
         child: Consumer<DefaultAssetPickerProvider>(
           builder: (_, DefaultAssetPickerProvider p, __) {
             final int index = p.selectedAssets.indexOf(asset);

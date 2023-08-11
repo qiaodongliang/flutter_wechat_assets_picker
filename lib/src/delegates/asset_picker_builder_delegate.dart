@@ -939,10 +939,13 @@ class DefaultAssetPickerBuilderDelegate
       ),
       leading: backButton(context),
       actions: <Widget>[
-        Padding(
-          padding: const EdgeInsets.only(right: 16),
-          child: confirmButton(context),
-        ),
+        if (enterClip == false)
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: confirmButton(context),
+          )
+        else
+          Container(),
       ],
     );
   }
@@ -2025,7 +2028,7 @@ class DefaultAssetPickerBuilderDelegate
   @override
   Widget selectIndicator(BuildContext context, int index, AssetEntity asset) {
     final double indicatorSize = (24 / 375) * MediaQuery.of(context).size.width;
-        //context.mediaQuery.size.width / gridCount / 3.5;
+    //context.mediaQuery.size.width / gridCount / 3.5;
     final Duration duration = switchingPathDuration * 0.75;
     return Selector<DefaultAssetPickerProvider, String>(
       selector: (_, DefaultAssetPickerProvider p) => p.selectedDescriptions,
@@ -2091,39 +2094,46 @@ class DefaultAssetPickerBuilderDelegate
         context.mediaQuery.size.width / gridCount / 3.5;
     return Positioned.fill(
       child: GestureDetector(
-        // onTap: isPreviewEnabled ? () => viewAsset(context, index, asset) : null,
-        onTap: isSingleAssetMode && enterClip == true ? null : () => viewAsset(context, index, asset),
+        onTap: isSingleAssetMode == true
+            ? null
+            : () => viewAsset(context, index, asset),
         child: Consumer<DefaultAssetPickerProvider>(
           builder: (_, DefaultAssetPickerProvider p, __) {
             final int index = p.selectedAssets.indexOf(asset);
             final bool selected = index != -1;
-            return AnimatedContainer(
-              duration: switchingPathDuration,
-              padding: EdgeInsets.all(indicatorSize * .35),
-              color: selected
-                  ? theme.colorScheme.primary.withOpacity(.01)
-                  : theme.colorScheme.background.withOpacity(.01),
-              // child: selected && !isSingleAssetMode
-              //     ? Align(
-              //         alignment: AlignmentDirectional.topStart,
-              //         child: SizedBox(
-              //           height: indicatorSize / 2.5,
-              //           child: FittedBox(
-              //             alignment: AlignmentDirectional.topStart,
-              //             fit: BoxFit.cover,
-              //             child: Text(
-              //               '${index + 1}',
-              //               style: TextStyle(
-              //                 color: theme.textTheme.bodyLarge?.color
-              //                     ?.withOpacity(.75),
-              //                 fontWeight: FontWeight.w600,
-              //                 height: 1,
-              //               ),
-              //             ),
-              //           ),
-              //         ),
-              //       )
-              //     : const SizedBox.shrink(),
+            return GestureDetector(
+              // onTap: isPreviewEnabled ? () => viewAsset(context, index, asset) : null,
+              onTap: isSingleAssetMode
+                  ? () => selectAsset(context, asset, index, selected)
+                  : null,
+              child: AnimatedContainer(
+                duration: switchingPathDuration,
+                padding: EdgeInsets.all(indicatorSize * .35),
+                color: selected
+                    ? theme.colorScheme.primary.withOpacity(.01)
+                    : theme.colorScheme.background.withOpacity(.01),
+                // child: selected && !isSingleAssetMode
+                //     ? Align(
+                //         alignment: AlignmentDirectional.topStart,
+                //         child: SizedBox(
+                //           height: indicatorSize / 2.5,
+                //           child: FittedBox(
+                //             alignment: AlignmentDirectional.topStart,
+                //             fit: BoxFit.cover,
+                //             child: Text(
+                //               '${index + 1}',
+                //               style: TextStyle(
+                //                 color: theme.textTheme.bodyLarge?.color
+                //                     ?.withOpacity(.75),
+                //                 fontWeight: FontWeight.w600,
+                //                 height: 1,
+                //               ),
+                //             ),
+                //           ),
+                //         ),
+                //       )
+                //     : const SizedBox.shrink(),
+              ),
             );
           },
         ),

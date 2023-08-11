@@ -4,12 +4,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
-
-import 'constants/extensions.dart';
-import 'constants/screens.dart';
-import 'pages/splash_page.dart';
 
 const Color themeColor = Color(0xff00bc56);
 
@@ -30,39 +25,108 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'WeChat Asset Picker Demo',
-      theme: ThemeData(
-        brightness: Screens.mediaQuery.platformBrightness,
-        primarySwatch: themeColor.swatch,
-        textSelectionTheme: const TextSelectionThemeData(
-          cursorColor: themeColor,
-        ),
-      ),
-      home: const SplashPage(),
-      builder: (BuildContext c, Widget? w) {
-        return ScrollConfiguration(
-          behavior: const NoGlowScrollBehavior(),
-          child: w!,
-        );
-      },
-      localizationsDelegates: const <LocalizationsDelegate<dynamic>>[
-        GlobalWidgetsLocalizations.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
+    return const MaterialApp(
+      home: DLHome(),
     );
   }
 }
 
-class NoGlowScrollBehavior extends ScrollBehavior {
-  const NoGlowScrollBehavior();
+class DLHome extends StatefulWidget {
+  const DLHome({super.key});
 
   @override
-  Widget buildOverscrollIndicator(
-    BuildContext context,
-    Widget child,
-    ScrollableDetails details,
-  ) =>
-      child;
+  State<DLHome> createState() => _DLHomeState();
+}
+
+class _DLHomeState extends State<DLHome> {
+  Uint8List? imageData;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('相册'),
+      ),
+      body: Column(
+        children: <Widget>[
+          Center(
+            child: Container(
+              width: 200,
+              height: 200,
+              color: Colors.red,
+              child: imageData != null
+                  ? Image.memory(
+                      imageData!,
+                      fit: BoxFit.cover,
+                    )
+                  : Container(),
+            ),
+          ),
+          GestureDetector(
+            onTap: () {
+              AssetPicker.pickAssets(
+                context,
+                pickerConfig: AssetPickerConfig(
+                  textDelegate: const AssetPickerTextDelegate(),
+                  enterClip: false,
+                  requestType: RequestType.image,
+                  pickerTheme: Theme.of(context).copyWith(
+                    canvasColor: Colors.white,
+                    primaryColor: Colors.white,
+                    dividerColor: const Color(0xFFC9CDD4),
+                    disabledColor: const Color(0xFFF2F3F5),
+                    unselectedWidgetColor: Colors.white,
+                    colorScheme: const ColorScheme(
+                      brightness: Brightness.light,
+                      primary: Colors.black,
+                      onPrimary: Colors.black,
+                      secondary: Color(0xFF725BFF),
+                      onSecondary: Colors.black,
+                      error: Colors.red,
+                      onError: Colors.red,
+                      background: Colors.white,
+                      onBackground: Colors.white,
+                      surface: Colors.white,
+                      onSurface: Colors.white,
+                    ),
+                    textTheme: const TextTheme(
+                        bodySmall: TextStyle(
+                          color: Color(0xFF86909C),
+                        ),
+                        labelLarge: TextStyle(color: Color(0xFF1D2129))),
+                    appBarTheme: const AppBarTheme(
+                        systemOverlayStyle: SystemUiOverlayStyle(
+                      statusBarColor: Colors.transparent,
+                      statusBarIconBrightness: Brightness.dark,
+                    )),
+                  ),
+                  maxAssets: 9,
+                  //maxAssetsCount,
+                  // selectedAssets: assets,
+                  specialPickerType: SpecialPickerType.noPreview,
+                ),
+              ).then((value) {
+                print('************************ $value');
+                if (value is Uint8List) {
+                  setState(() {
+                    imageData = value;
+                  });
+                }
+              });
+            },
+            child: const Padding(
+              padding: EdgeInsets.only(top: 20),
+              child: Text(
+                '选择',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.red,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }

@@ -146,10 +146,13 @@ abstract class AssetPickerViewerBuilderDelegate<Asset, Path> {
 
   /// Whether the current platform is Apple OS.
   /// 当前平台是否为苹果系列系统
-  bool isAppleOS(BuildContext context) => switch (Theme.of(context).platform) {
-        TargetPlatform.iOS || TargetPlatform.macOS => true,
-        _ => false,
-      };
+  bool isAppleOS(BuildContext context) {
+    if (Theme.of(context).platform == TargetPlatform.iOS ||
+        Theme.of(context).platform == TargetPlatform.macOS) {
+      return true;
+    }
+    return false;
+  }
 
   AssetPickerTextDelegate get textDelegate => Singleton.textDelegate;
 
@@ -326,13 +329,22 @@ abstract class AssetPickerViewerBuilderDelegate<Asset, Path> {
     ExtendedImageState state, {
     bool hasLoaded = false,
   }) {
-    return switch (state.extendedImageLoadState) {
-      LoadState.completed => hasLoaded
+    if (state.extendedImageLoadState == LoadState.completed) {
+      return hasLoaded
           ? state.completedWidget
-          : FadeImageBuilder(child: state.completedWidget),
-      LoadState.failed => failedItemBuilder(context),
-      LoadState.loading => const SizedBox.shrink(),
-    };
+          : FadeImageBuilder(child: state.completedWidget);
+    } else if (state.extendedImageLoadState == LoadState.failed) {
+      return failedItemBuilder(context);
+    } else {
+      return const SizedBox.shrink();
+    }
+    // return switch (state.extendedImageLoadState) {
+    //   LoadState.completed => hasLoaded
+    //       ? state.completedWidget
+    //       : FadeImageBuilder(child: state.completedWidget),
+    //   LoadState.failed => failedItemBuilder(context),
+    //   LoadState.loading => const SizedBox.shrink(),
+    // };
   }
 
   /// The item widget when [AssetEntity.thumbnailData] load failed.
@@ -411,25 +423,48 @@ class DefaultAssetPickerViewerBuilderDelegate
   @override
   Widget assetPageBuilder(BuildContext context, int index) {
     final AssetEntity asset = previewAssets.elementAt(index);
-    final Widget builder = switch (asset.type) {
-      AssetType.audio => AudioPageBuilder(asset: asset),
-      AssetType.image => ImagePageBuilder(
-          asset: asset,
-          delegate: this,
-          previewThumbnailSize: previewThumbnailSize,
+    Widget builder;
+    if (asset.type == AssetType.audio) {
+      builder = AudioPageBuilder(asset: asset);
+    } else if (asset.type == AssetType.image) {
+      builder = ImagePageBuilder(
+        asset: asset,
+        delegate: this,
+        previewThumbnailSize: previewThumbnailSize,
+      );
+    } else if (asset.type == AssetType.video) {
+      builder = VideoPageBuilder(
+        asset: asset,
+        delegate: this,
+        hasOnlyOneVideoAndMoment: isWeChatMoment && hasVideo,
+      );
+    } else {
+      builder = Center(
+        child: ScaleText(
+          textDelegate.unSupportedAssetType,
+          semanticsLabel: semanticsTextDelegate.unSupportedAssetType,
         ),
-      AssetType.video => VideoPageBuilder(
-          asset: asset,
-          delegate: this,
-          hasOnlyOneVideoAndMoment: isWeChatMoment && hasVideo,
-        ),
-      AssetType.other => Center(
-          child: ScaleText(
-            textDelegate.unSupportedAssetType,
-            semanticsLabel: semanticsTextDelegate.unSupportedAssetType,
-          ),
-        ),
-    };
+      );
+    }
+    // final Widget builder = switch (asset.type) {
+    //   AssetType.audio => AudioPageBuilder(asset: asset),
+    //   AssetType.image => ImagePageBuilder(
+    //       asset: asset,
+    //       delegate: this,
+    //       previewThumbnailSize: previewThumbnailSize,
+    //     ),
+    //   AssetType.video => VideoPageBuilder(
+    //       asset: asset,
+    //       delegate: this,
+    //       hasOnlyOneVideoAndMoment: isWeChatMoment && hasVideo,
+    //     ),
+    //   AssetType.other => Center(
+    //       child: ScaleText(
+    //         textDelegate.unSupportedAssetType,
+    //         semanticsLabel: semanticsTextDelegate.unSupportedAssetType,
+    //       ),
+    //     ),
+    // };
     return MergeSemantics(
       child: Consumer<AssetPickerViewerProvider<AssetEntity>?>(
         builder: (
@@ -632,12 +667,22 @@ class DefaultAssetPickerViewerBuilderDelegate
           builder: (_, AsyncSnapshot<int> snapshot) {
             final AssetEntity asset = selectedAssets!.elementAt(index);
             final bool isViewing = previewAssets[snapshot.data!] == asset;
-            final Widget item = switch (asset.type) {
-              AssetType.image => _imagePreviewItem(asset),
-              AssetType.video => _videoPreviewItem(asset),
-              AssetType.audio => _audioPreviewItem(asset),
-              AssetType.other => const SizedBox.shrink(),
-            };
+            Widget item;
+            if (asset.type == AssetType.image) {
+              item = _imagePreviewItem(asset);
+            } else if (asset.type == AssetType.video) {
+              item = _videoPreviewItem(asset);
+            } else if (asset.type == AssetType.audio) {
+              item = _audioPreviewItem(asset);
+            } else {
+              item = const SizedBox.shrink();
+            }
+            // final Widget item = switch (asset.type) {
+            //   AssetType.image => _imagePreviewItem(asset),
+            //   AssetType.video => _videoPreviewItem(asset),
+            //   AssetType.audio => _audioPreviewItem(asset),
+            //   AssetType.other => const SizedBox.shrink(),
+            // };
             return Semantics(
               label: '${semanticsTextDelegate.semanticTypeLabel(asset.type)}'
                   '${index + 1}',
@@ -694,7 +739,7 @@ class DefaultAssetPickerViewerBuilderDelegate
   /// 顶栏部件
   Widget appBar(BuildContext context) {
     return ValueListenableBuilder<bool>(
-      valueListenable: ValueNotifier<bool>(true),//isDisplayingDetail,
+      valueListenable: ValueNotifier<bool>(true), //isDisplayingDetail,
       builder: (_, bool value, Widget? child) => AnimatedPositionedDirectional(
         duration: kThemeAnimationDuration,
         curve: Curves.easeInOut,
@@ -800,8 +845,8 @@ class DefaultAssetPickerViewerBuilderDelegate
             if (provider!.isSelectedNotEmpty) {
               return '${textDelegate.confirm}'
                   '(${provider.currentlySelectedAssets.length})';
-                  // '/'
-                  // '${selectorProvider!.maxAssets})';
+              // '/'
+              // '${selectorProvider!.maxAssets})';
             }
             return textDelegate.confirm;
           }
@@ -841,8 +886,8 @@ class DefaultAssetPickerViewerBuilderDelegate
                 if (provider!.isSelectedNotEmpty) {
                   return '${semanticsTextDelegate.confirm}'
                       '(${provider.currentlySelectedAssets.length})';
-                      // '/'
-                      // '${selectorProvider!.maxAssets})';
+                  // '/'
+                  // '${selectorProvider!.maxAssets})';
                 }
                 return semanticsTextDelegate.confirm;
               }(),
@@ -874,13 +919,19 @@ class DefaultAssetPickerViewerBuilderDelegate
         width: 24.0,
         height: 24.0,
         decoration: BoxDecoration(
-          border: !isSelected
-              ? Border.all(color: themeData.dividerColor)
-              : null,
+          border:
+              !isSelected ? Border.all(color: themeData.dividerColor) : null,
           color: isSelected ? themeData.colorScheme.secondary : null,
           shape: BoxShape.circle,
         ),
-        child: isSelected ? Center(child: Icon(Icons.check, size: 20.0, color: themeData.canvasColor,)) : const SizedBox.shrink(),
+        child: isSelected
+            ? Center(
+                child: Icon(
+                Icons.check,
+                size: 20.0,
+                color: themeData.canvasColor,
+              ))
+            : const SizedBox.shrink(),
       ),
     );
   }

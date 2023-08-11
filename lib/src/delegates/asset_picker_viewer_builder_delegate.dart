@@ -89,7 +89,7 @@ abstract class AssetPickerViewerBuilderDelegate<Asset, Path> {
 
   /// Whether detail widgets displayed.
   /// 详情部件是否显示
-  final ValueNotifier<bool> isDisplayingDetail = ValueNotifier<bool>(true);
+  final ValueNotifier<bool> isDisplayingDetail = ValueNotifier<bool>(false);
 
   /// The [State] for a viewer.
   /// 预览器的状态实例

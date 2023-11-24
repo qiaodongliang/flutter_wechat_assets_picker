@@ -2150,41 +2150,42 @@ class DefaultAssetPickerBuilderDelegate
   @override
   Widget videoIndicator(BuildContext context, AssetEntity asset) {
     return PositionedDirectional(
-      start: 0,
-      end: 0,
-      bottom: 0,
+      end: 8,
+      bottom: 8,
       child: Container(
-        width: double.maxFinite,
-        height: 26,
-        padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
+        // width: double.maxFinite,
+        height: 20,
+        padding: const EdgeInsets.symmetric(horizontal: 6),
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: AlignmentDirectional.bottomCenter,
-            end: AlignmentDirectional.topCenter,
-            colors: <Color>[theme.dividerColor, Colors.transparent],
-          ),
+          borderRadius: BorderRadius.circular(12),
+          color: Colors.black.withOpacity(0.32),
         ),
         child: Row(
           children: <Widget>[
-            const Icon(Icons.videocam, size: 22, color: Colors.white),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsetsDirectional.only(start: 4),
-                child: ScaleText(
-                  textDelegate.durationIndicatorBuilder(
-                    Duration(seconds: asset.duration),
-                  ),
-                  style: const TextStyle(color: Colors.white, fontSize: 15),
-                  strutStyle: const StrutStyle(
-                    forceStrutHeight: true,
-                    height: 1.4,
-                  ),
-                  maxLines: 1,
-                  maxScaleFactor: 1.2,
-                  semanticsLabel:
-                      semanticsTextDelegate.durationIndicatorBuilder(
-                    Duration(seconds: asset.duration),
-                  ),
+            const Icon(
+              Icons.play_arrow_rounded,
+              color: Colors.white,
+              size: 14,
+            ),
+            Padding(
+              padding: const EdgeInsets.only(left: 2),
+              child: ScaleText(
+                textDelegate.durationIndicatorBuilder(
+                  Duration(seconds: asset.duration),
+                ),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w500,
+                  fontFamily: 'PingFang SC',
+                ),
+                strutStyle: const StrutStyle(
+                  forceStrutHeight: true,
+                ),
+                maxLines: 1,
+                maxScaleFactor: 1.2,
+                semanticsLabel: semanticsTextDelegate.durationIndicatorBuilder(
+                  Duration(seconds: asset.duration),
                 ),
               ),
             ),

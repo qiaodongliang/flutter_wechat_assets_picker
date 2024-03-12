@@ -102,6 +102,8 @@ class AssetPickerDelegate {
         themeColor: pickerConfig.themeColor,
         locale: Localizations.maybeLocaleOf(context),
         enterClip: pickerConfig.enterClip,
+        maxDuration: pickerConfig.maxDuration,
+        onVideoDurationOverLimit: pickerConfig.onVideoDurationOverLimit,
       ),
     );
     final result = await Navigator.of(

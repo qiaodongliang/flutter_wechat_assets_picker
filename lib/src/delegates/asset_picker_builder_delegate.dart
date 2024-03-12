@@ -677,6 +677,8 @@ class DefaultAssetPickerBuilderDelegate
     this.specialPickerType,
     this.keepScrollOffset = false,
     this.enterClip = false,
+    this.maxDuration,
+    this.onVideoDurationOverLimit,
   }) {
     // Add the listener if [keepScrollOffset] is true.
     if (keepScrollOffset) {
@@ -733,6 +735,12 @@ class DefaultAssetPickerBuilderDelegate
 
   /// 是否进入图片裁剪页面
   final bool? enterClip;
+
+  /// 视频的最大长度
+  final double? maxDuration;
+
+  /// 视频时长超过限制的回调
+  final Function(AssetEntity entity)? onVideoDurationOverLimit;
 
   /// [Duration] when triggering path switching.
   /// 切换路径时的动画时长
@@ -798,6 +806,13 @@ class DefaultAssetPickerBuilderDelegate
     }
     if (isSingleAssetMode) {
       provider.selectedAssets.clear();
+    }
+
+    if (maxDuration != null && asset.type == AssetType.video) {
+      if (asset.duration > maxDuration! && onVideoDurationOverLimit != null) {
+        onVideoDurationOverLimit!(asset);
+        return;
+      }
     }
     provider.selectAsset(asset);
     if (isSingleAssetMode && !isPreviewEnabled && enterClip == false) {

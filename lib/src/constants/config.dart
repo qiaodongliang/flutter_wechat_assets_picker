@@ -37,6 +37,8 @@ class AssetPickerConfig {
     this.limitedPermissionOverlayPredicate,
     this.pathNameBuilder,
     this.enterClip = false,
+    this.maxDuration,
+    this.onVideoDurationOverLimit,
   })  : assert(
           pickerTheme == null || themeColor == null,
           'pickerTheme and themeColor cannot be set at the same time.',
@@ -195,4 +197,10 @@ class AssetPickerConfig {
 
   /// 是否进入裁剪页面
   final bool? enterClip;
+
+  /// 视频模式下，视频的最大时长
+  final double? maxDuration;
+
+  /// 视频时长超限后的回调
+  final Function(AssetEntity entity)? onVideoDurationOverLimit;
 }

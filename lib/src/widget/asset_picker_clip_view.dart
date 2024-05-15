@@ -9,9 +9,12 @@ class DLAssetPickerClipView extends StatefulWidget {
   const DLAssetPickerClipView({
     super.key,
     required this.assetEntity,
+    this.roundCropLayerPainter,
   });
 
   final AssetEntity assetEntity;
+
+  final bool? roundCropLayerPainter;
 
   @override
   State<DLAssetPickerClipView> createState() => _DLAssetPickerClipViewState();
@@ -65,7 +68,9 @@ class _DLAssetPickerClipViewState extends State<DLAssetPickerClipView> {
                     cornerSize: Size.zero,
                     lineColor: Colors.white,
                     lineHeight: 1,
-                    cropLayerPainter: const DLEditorCropLayerPainter(),
+                    cropLayerPainter: widget.roundCropLayerPainter == true
+                        ? const DLEditorCropLayerPainter()
+                        : const EditorCropLayerPainter(),
                     cropRectPadding:
                         EdgeInsets.symmetric(horizontal: _setWidth(16)),
                     cropAspectRatio: 1,

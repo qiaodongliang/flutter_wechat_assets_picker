@@ -37,6 +37,7 @@ class AssetPickerConfig {
     this.limitedPermissionOverlayPredicate,
     this.pathNameBuilder,
     this.enterClip = false,
+    this.roundCropLayerPainter = true,
     this.maxDuration,
     this.onVideoDurationOverLimit,
   })  : assert(
@@ -197,6 +198,9 @@ class AssetPickerConfig {
 
   /// 是否进入裁剪页面
   final bool? enterClip;
+
+  /// 是否使用圆形裁剪框
+  final bool? roundCropLayerPainter;
 
   /// 视频模式下，视频的最大时长
   final double? maxDuration;

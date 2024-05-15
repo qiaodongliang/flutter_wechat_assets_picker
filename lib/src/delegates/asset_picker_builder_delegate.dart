@@ -677,6 +677,7 @@ class DefaultAssetPickerBuilderDelegate
     this.specialPickerType,
     this.keepScrollOffset = false,
     this.enterClip = false,
+    this.roundCropLayerPainter = true,
     this.maxDuration,
     this.onVideoDurationOverLimit,
   }) {
@@ -735,6 +736,9 @@ class DefaultAssetPickerBuilderDelegate
 
   /// 是否进入图片裁剪页面
   final bool? enterClip;
+
+  /// 是否使用圆形裁剪框
+  final bool? roundCropLayerPainter;
 
   /// 视频的最大长度
   final double? maxDuration;
@@ -826,6 +830,7 @@ class DefaultAssetPickerBuilderDelegate
         await AssetPickerViewer.pushToClipPage(
           context,
           assetEntity: selectedAssets[0],
+          roundCropLayerPainter: roundCropLayerPainter,
         );
       }
     }

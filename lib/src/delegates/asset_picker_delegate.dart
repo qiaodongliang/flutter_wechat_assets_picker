@@ -102,6 +102,7 @@ class AssetPickerDelegate {
         themeColor: pickerConfig.themeColor,
         locale: Localizations.maybeLocaleOf(context),
         enterClip: pickerConfig.enterClip,
+        roundCropLayerPainter: pickerConfig.roundCropLayerPainter,
         maxDuration: pickerConfig.maxDuration,
         onVideoDurationOverLimit: pickerConfig.onVideoDurationOverLimit,
       ),

@@ -323,7 +323,12 @@ class DefaultAssetPickerProvider
       );
       // Merge user's filter options into base options if it's not null.
       if (fog != null) {
+        // 更新选择的时间，修复相册为空时，新拍照的图片因为老的时间无法获取到的问题
+        DateTimeCond createTimeCond = newOptions.createTimeCond;
+        DateTimeCond updateTimeCond = newOptions.updateTimeCond;
         newOptions.merge(fog);
+        newOptions.createTimeCond = createTimeCond;
+        newOptions.updateTimeCond = updateTimeCond;
       }
       options = newOptions;
     } else {

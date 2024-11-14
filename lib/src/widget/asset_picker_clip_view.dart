@@ -10,11 +10,19 @@ class DLAssetPickerClipView extends StatefulWidget {
     super.key,
     required this.assetEntity,
     this.roundCropLayerPainter,
+    this.cropType,
+    this.cropAspectRatio = 1.0,
   });
 
   final AssetEntity assetEntity;
 
   final bool? roundCropLayerPainter;
+
+  // 裁剪比例
+  final double? cropAspectRatio;
+
+  // 裁剪形状 1 = 表示圆形；2 = 表示方形
+  final int? cropType;
 
   @override
   State<DLAssetPickerClipView> createState() => _DLAssetPickerClipViewState();
@@ -68,12 +76,14 @@ class _DLAssetPickerClipViewState extends State<DLAssetPickerClipView> {
                     cornerSize: Size.zero,
                     lineColor: Colors.white,
                     lineHeight: 1,
-                    cropLayerPainter: widget.roundCropLayerPainter == true
-                        ? const DLEditorCropLayerPainter()
-                        : const EditorCropLayerPainter(),
+                    cropLayerPainter: cropLayerPainter: widget.cropType == 1
+                        ? const DLEditorCropRoundLayerPainter()
+                        : widget.cropType == 2
+                            ? const DLEditorCropSquareLayerPainter()
+                            : const EditorCropLayerPainter(),
                     cropRectPadding:
                         EdgeInsets.symmetric(horizontal: _setWidth(16)),
-                    cropAspectRatio: 1,
+                    cropAspectRatio: widget.cropAspectRatio,
                     initialCropAspectRatio: CropAspectRatios.ratio1_1,
                     initCropRectType: InitCropRectType.layoutRect,
                     hitTestBehavior: HitTestBehavior.translucent,
@@ -223,8 +233,9 @@ class _DLAssetPickerClipViewState extends State<DLAssetPickerClipView> {
   }
 }
 
-class DLEditorCropLayerPainter extends EditorCropLayerPainter {
-  const DLEditorCropLayerPainter();
+// 绘制圆形框
+class DLEditorCropRoundLayerPainter extends EditorCropLayerPainter {
+  const DLEditorCropRoundLayerPainter();
 
   @override
   void paintCorners(
@@ -282,6 +293,72 @@ class DLEditorCropLayerPainter extends EditorCropLayerPainter {
 
     canvas.drawPath(path, paint);
     // super.paintMask(canvas, size, painter);
+  }
+
+  @override
+  void paintLines(
+      Canvas canvas, Size size, ExtendedImageCropLayerPainter painter) {}
+}
+
+// 绘制方形框
+class DLEditorCropSquareLayerPainter extends EditorCropLayerPainter {
+  const DLEditorCropSquareLayerPainter();
+
+  @override
+  void paintCorners(
+    Canvas canvas,
+    Size size,
+    ExtendedImageCropLayerPainter painter,
+  ) {
+    final Rect rect = painter.cropRect;
+
+    final Paint paint = Paint()
+      ..color = painter.cornerColor
+      ..style = PaintingStyle.stroke
+      ..isAntiAlias = true
+      ..filterQuality = FilterQuality.high
+      ..strokeWidth = painter.lineHeight;
+    canvas.drawRect(rect, paint);
+    // super.paintCorners(canvas, size, painter);
+  }
+
+  @override
+  void paintMask(
+    Canvas canvas,
+    Size size,
+    ExtendedImageCropLayerPainter painter,
+  ) {
+    final Rect rect = Offset.zero & size;
+    final Rect cropRect = painter.cropRect;
+    final Color maskColor = painter.maskColor;
+
+    final Paint paint = Paint()
+      ..color = maskColor
+      ..style = PaintingStyle.fill
+      ..filterQuality = FilterQuality.high;
+
+    // left
+    canvas.drawRect(
+      Offset.zero & Size(cropRect.left, rect.height),
+      paint,
+    );
+    //top
+    canvas.drawRect(
+      Offset(cropRect.left, 0.0) & Size(cropRect.width, cropRect.top),
+      paint,
+    );
+    //right
+    canvas.drawRect(
+      Offset(cropRect.right, 0.0) &
+          Size(rect.width - cropRect.right, rect.height),
+      paint,
+    );
+    //bottom
+    canvas.drawRect(
+      Offset(cropRect.left, cropRect.bottom) &
+          Size(cropRect.width, rect.height - cropRect.bottom),
+      paint,
+    );
   }
 
   @override

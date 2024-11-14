@@ -76,7 +76,7 @@ class _DLAssetPickerClipViewState extends State<DLAssetPickerClipView> {
                     cornerSize: Size.zero,
                     lineColor: Colors.white,
                     lineHeight: 1,
-                    cropLayerPainter: cropLayerPainter: widget.cropType == 1
+                    cropLayerPainter: widget.cropType == 1
                         ? const DLEditorCropRoundLayerPainter()
                         : widget.cropType == 2
                             ? const DLEditorCropSquareLayerPainter()

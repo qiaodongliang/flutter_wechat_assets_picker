@@ -35,11 +35,15 @@ class AssetPickerViewer<Asset, Path> extends StatefulWidget {
     BuildContext context, {
     required AssetEntity assetEntity,
     bool? roundCropLayerPainter,
+    double? cropAspectRatio,
+    int? cropType,
     DefaultAssetPickerProvider? selectorProvider,
   }) async {
     final Widget clipView = DLAssetPickerClipView(
       assetEntity: assetEntity,
       roundCropLayerPainter: roundCropLayerPainter,
+      cropAspectRatio: cropAspectRatio,
+      cropType: cropType,
     );
     final MaterialPageRoute<Map<String, dynamic>> pageRoute =
         MaterialPageRoute<Map<String, dynamic>>(

@@ -677,6 +677,8 @@ class DefaultAssetPickerBuilderDelegate
     this.specialPickerType,
     this.keepScrollOffset = false,
     this.enterClip = false,
+    this.cropAspectRatio,
+    this.cropType,
     this.roundCropLayerPainter = true,
     this.maxDuration,
     this.onVideoDurationOverLimit,
@@ -736,6 +738,12 @@ class DefaultAssetPickerBuilderDelegate
 
   /// 是否进入图片裁剪页面
   final bool? enterClip;
+
+  /// 裁剪比例
+  final double? cropAspectRatio;
+
+  /// 裁剪形状 1 = 圆形；2 = 方形；其他情况默认
+  final int? cropType;
 
   /// 是否使用圆形裁剪框
   final bool? roundCropLayerPainter;
@@ -831,6 +839,8 @@ class DefaultAssetPickerBuilderDelegate
           context,
           assetEntity: selectedAssets[0],
           roundCropLayerPainter: roundCropLayerPainter,
+          cropAspectRatio: cropAspectRatio,
+          cropType: cropType,
         );
       }
     }

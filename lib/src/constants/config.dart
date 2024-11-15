@@ -39,7 +39,6 @@ class AssetPickerConfig {
     this.enterClip = false,
     this.cropAspectRatio,
     this.cropType,
-    this.roundCropLayerPainter = true,
     this.maxDuration,
     this.onVideoDurationOverLimit,
   })  : assert(
@@ -206,9 +205,6 @@ class AssetPickerConfig {
 
   /// 裁剪形状 1 = 圆形；2 = 方形；其他情况默认
   final int? cropType;
-
-  /// 是否使用圆形裁剪框
-  final bool? roundCropLayerPainter;
 
   /// 视频模式下，视频的最大时长
   final double? maxDuration;

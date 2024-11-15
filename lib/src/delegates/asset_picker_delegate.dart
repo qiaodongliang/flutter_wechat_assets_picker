@@ -104,7 +104,6 @@ class AssetPickerDelegate {
         enterClip: pickerConfig.enterClip,
         cropAspectRatio: pickerConfig.cropAspectRatio,
         cropType: pickerConfig.cropType,
-        roundCropLayerPainter: pickerConfig.roundCropLayerPainter,
         maxDuration: pickerConfig.maxDuration,
         onVideoDurationOverLimit: pickerConfig.onVideoDurationOverLimit,
       ),

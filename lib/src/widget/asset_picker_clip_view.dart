@@ -9,14 +9,11 @@ class DLAssetPickerClipView extends StatefulWidget {
   const DLAssetPickerClipView({
     super.key,
     required this.assetEntity,
-    this.roundCropLayerPainter,
     this.cropType,
     this.cropAspectRatio = 1.0,
   });
 
   final AssetEntity assetEntity;
-
-  final bool? roundCropLayerPainter;
 
   // 裁剪比例
   final double? cropAspectRatio;

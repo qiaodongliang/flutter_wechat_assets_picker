@@ -679,7 +679,6 @@ class DefaultAssetPickerBuilderDelegate
     this.enterClip = false,
     this.cropAspectRatio,
     this.cropType,
-    this.roundCropLayerPainter = true,
     this.maxDuration,
     this.onVideoDurationOverLimit,
   }) {
@@ -744,9 +743,6 @@ class DefaultAssetPickerBuilderDelegate
 
   /// 裁剪形状 1 = 圆形；2 = 方形；其他情况默认
   final int? cropType;
-
-  /// 是否使用圆形裁剪框
-  final bool? roundCropLayerPainter;
 
   /// 视频的最大长度
   final double? maxDuration;
@@ -838,7 +834,6 @@ class DefaultAssetPickerBuilderDelegate
         await AssetPickerViewer.pushToClipPage(
           context,
           assetEntity: selectedAssets[0],
-          roundCropLayerPainter: roundCropLayerPainter,
           cropAspectRatio: cropAspectRatio,
           cropType: cropType,
         );
